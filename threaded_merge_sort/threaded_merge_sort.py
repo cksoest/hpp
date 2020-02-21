@@ -32,8 +32,9 @@ def get_index_min(data):
 
 def split_data(data, num_sub_lists):
 	"""
-	Data: Een lijst met getallen.
-	Num_sublists
+	Data: Een lijst met ints.
+	Num_sub_lists: Een int die aangeeft over hoeveel sublijsten de data verdeeld moet worden.
+	Returns: Een 2d lijst met de ints (van data) die verdeeld zijn over sublijsten.
 	"""
 	sub_size = int(len(data)/num_sub_lists)
 	sub_lists = []
@@ -53,9 +54,8 @@ def split_data(data, num_sub_lists):
 
 def delete_empty_sub_lists(sub_lists):
 	"""
-	Deze functie krijgt een 2d lijst met getallen
-	Deze functie verwijderd de lege sublijsten
-	en geeft 
+	Sub_lists: Een 2d list met ints.
+	Returns: Een 2d list met inst, waarvan de legen sublijsten verwijderd zijn.
 	"""
 	to_delete = []
 	for i in range(len(sub_lists)):
@@ -67,6 +67,10 @@ def delete_empty_sub_lists(sub_lists):
 
 
 def count_elem_sub_lists(sub_lists):
+	"""
+	Sub_lists: Een 2d lijst met getallen.
+	Returns: Een int die aan geeft hoeveel ints er in de 2d lijst staat.
+	"""
 	sum = 0
 	for i in range(len(sub_lists)):
 		sum += len(sub_lists[i])
@@ -74,14 +78,22 @@ def count_elem_sub_lists(sub_lists):
 
 
 def merge_sort(data, num_threads):
+	"""
+	Data: Een lijst met ints.
+	Num_threads: Een int die aangeeft hoeveel threads er gebruikt moeten worden.
+	Returns: Data multi-threaded gesorteerd met selecion_sort.
+	"""
 	sub_lists = split_data(data, num_threads)
 	sub_lists_sorted = []
 	data_sorted = []
+
+	# De sublijsten verdelen over de threads en "paralel" uitvoeren.
 	with concurrent.futures.ThreadPoolExecutor() as executor:
 		for i in range(num_threads):
 			t_sub_list = executor.submit(selection_sort, sub_lists[i])
 			sub_lists_sorted.append(t_sub_list.result())
 
+	# Samenvoegen van de sublijsten
 	while count_elem_sub_lists(sub_lists_sorted) != 0:
 		sub_lists_sorted = delete_empty_sub_lists(sub_lists_sorted)
 		next_elem = []
@@ -95,11 +107,17 @@ def merge_sort(data, num_threads):
 
 
 def main(len_list, num_threads_list, show_plot):
+	"""
+	len_list: Een int die aangeeft hoe lang de lijst moet zijn waar het algoritme mee gestest moet worden.
+	num_threads_list: Een lijst/range van ints, die aangeven met hoeveel threads het algorimge getest moet worden.
+	show_plot: Een boolean die aangeeft of er een plot getoond moet worden van de resultaten.
+	"""
 	time_results = []
 	random_list = []
 	for _ in range(len_list):
 		random_list.append(randrange(1000000))
 
+	# for loop voor het uitvoeren van merge_sort
 	print("merge_sort will be tested with a list of {} elements.". format(len_list))
 	print("----------------------------------------------------------------")
 	for thread in num_threads_list:
@@ -113,6 +131,7 @@ def main(len_list, num_threads_list, show_plot):
 		print("----------------------------------------------------------------")
 	print("merge_sort loop is ended")
 
+	# tonen plot
 	if show_plot:
 		plt.plot([i for i in num_threads_list], time_results)
 		plt.title("Performance merge_sort algoritme. {} willekeurige elementen".format(len_list))
@@ -121,7 +140,4 @@ def main(len_list, num_threads_list, show_plot):
 		plt.show()
 
 
-# (1e parameter)  geef hier de totale lengte van de lijst die gesorteerd moet worden, 
-# (2e parameter) geef hier een range of lijst die aangeeft met hoeveel threads het algoritme steeds uitgevoerd moet worden
-# (3e parameter) geef hier aan of je een grafiek getoond wil hebben van de resultaten
 main(10000, range(10,11), True)
